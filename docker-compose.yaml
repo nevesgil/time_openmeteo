@@ -67,6 +67,16 @@ services:
     networks:
       - stream_network
 
+  tdengine:
+    image: tdengine/tdengine:3.0.2.0
+    ports:
+      - "6030-6041:6030-6041"
+      - "6030-6041:6030-6041/udp"
+    volumes:
+      - ./data/tdengine:/var/lib/taos
+    networks:
+      - stream_network
+
 networks:
   stream_network:
     driver: bridge
