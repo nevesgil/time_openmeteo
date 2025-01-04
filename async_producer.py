@@ -1,9 +1,8 @@
-import requests
 from confluent_kafka import Producer
 import json
-import schedule
-import time
 import logging
+import aiohttp
+import asyncio
 
 # set up logging
 logging.basicConfig(level=logging.INFO)
@@ -12,13 +11,9 @@ logger = logging.getLogger(__name__)
 # default producer configuration
 producer_config = {
     "bootstrap.servers": "localhost:29092",
-    # to be adjusted
-    "batch.size": 200000,
-    "linger.ms": 100,
-    # 'compression.type': 'lz4',
-    # 'acks': '1',
-    # 'max.request.size': 10000000,
-    # 'buffer.memory': 33554432
+    "batch.size": 500000,
+    "linger.ms": 500,
+    "compression.type": "lz4",
 }
 
 # create the producer
@@ -37,21 +32,29 @@ def delivery_report(err, msg):
         logger.info(f"Message delivered to {msg.topic()} [{msg.partition()}]")
 
 
-def get_message_data(latitude, longitude):
+async def fetch_weather(session, location):
     try:
-        response = requests.get(
+        async with session.get(
             "https://api.open-meteo.com/v1/forecast",
             params={
-                "latitude": latitude,
-                "longitude": longitude,
+                "latitude": location["latitude"],
+                "longitude": location["longitude"],
                 "current_weather": "true",
             },
-        )
-        response.raise_for_status()
-        return response.json()
-    except requests.RequestException as e:
-        logger.error(f"Error fetching data: {e}")
+        ) as response:
+            response.raise_for_status()
+            data = await response.json()
+            data["city"] = location["city"]
+            return data
+    except Exception as e:
+        logger.error(f"Error fetching data for {location['city']}: {e}")
         return None
+
+
+async def fetch_all_weather(locations):
+    async with aiohttp.ClientSession() as session:
+        tasks = [fetch_weather(session, loc) for loc in locations]
+        return await asyncio.gather(*tasks)
 
 
 def send_message_to_kafka(topic, key, data):
@@ -63,35 +66,28 @@ def send_message_to_kafka(topic, key, data):
         logger.warning("Local producer queue is full, waiting for free space")
         producer.poll(1)
 
-def job():
-    try:
-        for location in locations:
-            weather_data = get_message_data(location["latitude"], location["longitude"])
-            if weather_data:
-                weather_data["city"] = location["city"]
-                # Use city name as the key to ensure messages are partitioned by city
-                send_message_to_kafka("weather-topic", key=location["city"], data=weather_data)
-    except Exception as e:
-        logger.error(f"Error in job execution: {e}")
+
+async def job():
+    weather_data = await fetch_all_weather(locations)
+    for data in weather_data:
+        if data:
+            send_message_to_kafka("weather-topic", key=data["city"], data=data)
 
 
-
-schedule.every(1).second.do(job)
-
-
-# just for testing, 60 messages
-def main():
+async def main():
     try:
         i = 0
-        while i <= 10:
-            schedule.run_pending()
-            time.sleep(1)
+        while i <= 100: #True
+            await job()
+            #await asyncio.sleep(1)
             i += 1
     except KeyboardInterrupt:
         logger.info("Shutting down...")
+    except asyncio.exceptions.CancelledError:
+        logger.info("Cancelled")
     finally:
         producer.flush()
 
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())
