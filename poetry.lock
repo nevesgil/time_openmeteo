@@ -113,6 +113,17 @@ files = [
 ]
 
 [[package]]
+name = "click"
+version = "7.0"
+description = "Composable command line interface toolkit"
+optional = false
+python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
+files = [
+    {file = "Click-7.0-py2.py3-none-any.whl", hash = "sha256:2335065e6395b9e67ca716de5f7526736bfa6ceead690adf616d925bdc622b13"},
+    {file = "Click-7.0.tar.gz", hash = "sha256:5b94b49521f6456670fdb30cd82a4eca9412788a93fa6dd6df72c94d5a8ff2d7"},
+]
+
+[[package]]
 name = "confluent-kafka"
 version = "2.7.0"
 description = "Confluent's Python client for Apache Kafka"
@@ -400,6 +411,20 @@ pymysql = ["pymysql"]
 sqlcipher = ["sqlcipher3_binary"]
 
 [[package]]
+name = "taos"
+version = "1.0.1"
+description = "Taos Command Line"
+optional = false
+python-versions = ">=3.6"
+files = [
+    {file = "taos-1.0.1-py3-none-any.whl", hash = "sha256:c05f681950f3e182e28e30f772805a33eafebc4d79101375499fdeb9de0d159d"},
+    {file = "taos-1.0.1.tar.gz", hash = "sha256:2daeff0d907dbde700e327ce4bc3b9f0e15246914a4b4ba1fea3a49a3fd57781"},
+]
+
+[package.dependencies]
+Click = "7.0"
+
+[[package]]
 name = "typing-extensions"
 version = "4.12.2"
 description = "Backported and Experimental Type Hints for Python 3.8+"
@@ -430,4 +455,4 @@ zstd = ["zstandard (>=0.18.0)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "606e5ad1b65dacfff8da64f21c3df3151f622c1ac5a641bdae890a18772b5a7a"
+content-hash = "318373524f4039af14c5d7b9b166b705acafb16a0dddd070b2e089300ed6e5a8"

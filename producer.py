@@ -24,8 +24,10 @@ producer_config = {
 # create the producer
 producer = Producer(producer_config)
 
-latitude = 23.5
-longitude = 46.625
+locations = [
+    {"city": "São Paulo", "latitude": 23.5, "longitude": 46.625},
+    {"city": "New York", "latitude": 40.7128, "longitude": -74.0060},
+]
 
 
 def delivery_report(err, msg):
@@ -52,24 +54,26 @@ def get_message_data(latitude, longitude):
         return None
 
 
-def send_message_to_kafka(topic, data):
+def send_message_to_kafka(topic, key, data):
     try:
         value = json.dumps(data)
-        producer.produce(topic, value=value, callback=delivery_report)
+        producer.produce(topic, key=key, value=value, callback=delivery_report)
         producer.poll(0)
     except BufferError:
         logger.warning("Local producer queue is full, waiting for free space")
         producer.poll(1)
 
-
-# this is to be replaced once we have a cronjob to trigger the producer
 def job():
     try:
-        weather_data = get_message_data(latitude, longitude)
-        if weather_data:
-            send_message_to_kafka("weather-topic", weather_data)
+        for location in locations:
+            weather_data = get_message_data(location["latitude"], location["longitude"])
+            if weather_data:
+                weather_data["city"] = location["city"]
+                # Use city name as the key to ensure messages are partitioned by city
+                send_message_to_kafka("weather-topic", key=location["city"], data=weather_data)
     except Exception as e:
         logger.error(f"Error in job execution: {e}")
+
 
 
 schedule.every(1).second.do(job)
@@ -79,7 +83,7 @@ schedule.every(1).second.do(job)
 def main():
     try:
         i = 0
-        while i <= 10:
+        while i <= 100:
             schedule.run_pending()
             time.sleep(1)
             i += 1
