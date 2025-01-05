@@ -37,10 +37,13 @@ class TDengineSetup:
         self.connect().execute(create_stable_query)
 
     def create_subtable(self, subtable_name, tags, values):
-        """Create a subtable using the super table and insert initial data."""
+        create_query = f"""
+        CREATE TABLE IF NOT EXISTS {subtable_name} USING weather_data TAGS ({tags})
+        """
+        self.connect().execute(create_query)
+
         insert_query = f"""
-        INSERT INTO {subtable_name} USING weather_data TAGS ({tags})
-        VALUES ({values})
+        INSERT INTO {subtable_name} VALUES ({values})
         """
         self.connect().execute(insert_query)
 

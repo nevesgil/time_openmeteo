@@ -20,8 +20,8 @@ producer_config = {
 producer = Producer(producer_config)
 
 locations = [
-    {"city": "sao_paulo", "latitude": 23.5, "longitude": 46.625},
-    {"city": "new_york", "latitude": 40.7128, "longitude": -74.0060},
+    {"city": "sao paulo", "latitude": 23.5, "longitude": 46.625},
+    {"city": "new york", "latitude": 40.7128, "longitude": -74.0060},
 ]
 
 
@@ -77,9 +77,9 @@ async def job():
 async def main():
     try:
         i = 0
-        while i <= 100: #True
+        while i <= 100:  # True
             await job()
-            #await asyncio.sleep(1)
+            # await asyncio.sleep(1)
             i += 1
     except KeyboardInterrupt:
         logger.info("Shutting down...")

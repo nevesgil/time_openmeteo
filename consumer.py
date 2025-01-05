@@ -7,7 +7,7 @@ from db.td import TDengineSetup
 import logging
 from time import time
 
-# Logging setup
+# Logging
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
 )
@@ -24,14 +24,14 @@ consumer_config = {
 # Global flag for graceful shutdown
 shutdown_flag = False
 
-# Initialize TDengine setup
+# TDengine setup
 tdengine = TDengineSetup()
 tdengine.set_database("weather_db", KEEP=365, WAL_LEVEL=1)
 
 # Create the super table
 tdengine.create_super_table(
     table_name="weather_data",
-    schema="ts TIMESTAMP, temperature FLOAT, windspeed FLOAT, winddirection INT, is_day BOOL, weathercode INT",
+    schema="ts TIMESTAMP, temperature FLOAT, windspeed FLOAT, winddirection INT, weathercode INT",
     tags="city VARCHAR(50)",
 )
 
@@ -50,33 +50,30 @@ def transform_message(message):
     """
     Transform a Kafka message into a format suitable for TDengine insertion.
     """
-    # Decode and parse the message
     data = json.loads(message.value().decode("utf-8"))
 
     validate_message(data)
 
-    # Extract city and weather data
     city = data["city"]
     current_weather = data["current_weather"]
 
-    # Transform data into the required format
-    timestamp = datetime.strptime(current_weather["time"], "%Y-%m-%dT%H:%M").strftime(
-        "%Y-%m-%d %H:%M:%S"
+    timestamp = datetime.strptime(current_weather["time"], "%Y-%m-%dT%H:%M")
+    timestamp = timestamp.replace(microsecond=int((time() % 1) * 1e6)).strftime(
+        "%Y-%m-%d %H:%M:%S.%f"
     )
     temperature = current_weather["temperature"]
     windspeed = current_weather["windspeed"]
     winddirection = current_weather["winddirection"]
-    is_day = current_weather.get("is_day", None)  # Use None if "is_day" is missing
     weathercode = current_weather["weathercode"]
 
-    # Generate the subtable name and tags
     subtable_name = (
         f"weather_{city.lower().replace(' ', '_')}"  # e.g., weather_new_york
     )
     tags = f"'{city}'"
-    values = f"'{timestamp}', {temperature}, {windspeed}, {winddirection}, {is_day}, {weathercode}"
+    values = (
+        f"'{timestamp}', {temperature}, {windspeed}, {winddirection}, {weathercode}"
+    )
 
-    # Return the transformed data
     return {
         "city": city,
         "subtable_name": subtable_name,
@@ -104,7 +101,7 @@ def update_offset(session, topic, partition, offset):
     session.commit()
 
 
-def process_data(session, weather_data):
+def process_data(weather_data):
     try:
         tdengine.create_subtable(
             subtable_name=weather_data["subtable_name"],
@@ -118,24 +115,33 @@ def process_data(session, weather_data):
 def consume_messages():
     consumer = Consumer(consumer_config)
     session = Session()
-    idle_threshold = 10  # seconds
+    idle_threshold = 10
     max_empty_polls = 5
     last_message_time = time()
     empty_poll_count = 0
 
     try:
+        # Get partitions and assign specific offsets
         partitions = (
             consumer.list_topics("weather-topic").topics["weather-topic"].partitions
         )
-        topic_partitions = [
-            TopicPartition(
-                "weather-topic",
-                partition,
-                get_latest_offset(session, "weather-topic", partition),
-            )
-            for partition in partitions
-        ]
+        topic_partitions = []
+
+        for partition in partitions:
+            tp = TopicPartition("weather-topic", partition)
+            last_offset = get_latest_offset(session, "weather-topic", partition)
+            print(f"Last offset for partition {partition}: {last_offset}")
+            if last_offset is not None:
+                tp.offset = last_offset
+            else:
+                tp.offset = OFFSET_BEGINNING
+            topic_partitions.append(tp)
+
+        # assign partitions
         consumer.assign(topic_partitions)
+
+        for tp in topic_partitions:
+            consumer.seek(tp)
 
         while not shutdown_flag:
             msg = consumer.poll(5.0)
@@ -149,18 +155,22 @@ def consume_messages():
                     break
                 continue
 
+            empty_poll_count = 0
+            last_message_time = time()
+
             if msg.error():
                 if msg.error().code() == KafkaError._PARTITION_EOF:
-                    logging.debug(
-                        f"End of partition {msg.partition()} at offset {msg.offset()}"
-                    )
-                else:
-                    logging.error(f"Kafka error: {msg.error()}")
+                    continue
+                logging.error(f"Kafka error: {msg.error()}")
                 continue
+
+            print(
+                f"Processing message from topic {msg.topic()}, partition {msg.partition()}, offset {msg.offset()}"
+            )
 
             try:
                 weather_data = transform_message(msg)
-                process_data(session, weather_data)
+                process_data(weather_data)
                 update_offset(session, msg.topic(), msg.partition(), msg.offset() + 1)
             except Exception as e:
                 logging.error(f"Error processing message: {e}")
