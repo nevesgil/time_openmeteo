@@ -63,6 +63,7 @@ def send_message_to_kafka(topic, key, data):
         logger.warning("Local producer queue is full, waiting for free space")
         producer.poll(1)
 
+
 def job():
     try:
         for location in locations:
@@ -70,10 +71,11 @@ def job():
             if weather_data:
                 weather_data["city"] = location["city"]
                 # Use city name as the key to ensure messages are partitioned by city
-                send_message_to_kafka("weather-topic", key=location["city"], data=weather_data)
+                send_message_to_kafka(
+                    "weather-topic", key=location["city"], data=weather_data
+                )
     except Exception as e:
         logger.error(f"Error in job execution: {e}")
-
 
 
 schedule.every(1).second.do(job)

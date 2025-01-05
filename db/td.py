@@ -1,23 +1,31 @@
-import taos
+import taosws
+
 
 class TDengineSetup:
-    def __init__(self, host="localhost", user="root", password="taosdata", database="testdb"):
+    def __init__(self, host="localhost", user="root", password="taosdata"):
         self.host = host
         self.user = user
         self.password = password
-        self.database = database
         self.conn = None
+        self.database = None
 
     def connect(self):
         """Establish a connection to TDengine."""
         if self.conn is None:
-            self.conn = taos.connect(host=self.host, user=self.user, password=self.password)
+            connection_url = f"taosws://{self.user}:{self.password}@{self.host}:6041"
+            self.conn = taosws.connect(connection_url)
         return self.conn
 
-    def create_database(self):
-        """Create the database if it doesn't exist."""
-        self.connect().execute(f"CREATE DATABASE IF NOT EXISTS {self.database}")
-        self.connect().execute(f"USE {self.database}")
+    def set_database(self, database_name, **options):
+        """Set the database name and create it if it doesn't exist."""
+        self.database = database_name
+        options_string = " ".join(
+            [f"{key.upper()} {value}" for key, value in options.items()]
+        )
+        self.connect().execute(
+            f"CREATE DATABASE IF NOT EXISTS {database_name} {options_string}"
+        )
+        self.connect().execute(f"USE {database_name}")
 
     def create_super_table(self, table_name, schema, tags):
         """Create a super table if it doesn't exist."""
@@ -27,6 +35,14 @@ class TDengineSetup:
         ) TAGS ({tags})
         """
         self.connect().execute(create_stable_query)
+
+    def create_subtable(self, subtable_name, tags, values):
+        """Create a subtable using the super table and insert initial data."""
+        insert_query = f"""
+        INSERT INTO {subtable_name} USING weather_data TAGS ({tags})
+        VALUES ({values})
+        """
+        self.connect().execute(insert_query)
 
     def close(self):
         """Close the connection."""

@@ -19,15 +19,15 @@ Base = declarative_base()
 
 
 # considering I'm saving the data transformed in the consumer
-class WeatherData(Base):
-    __tablename__ = "weather_data"
+# class WeatherData(Base):
+#     __tablename__ = "weather_data"
 
-    id = Column(Integer, primary_key=True)
-    timestamp = Column(DateTime, nullable=False)
-    temperature = Column(Float)
-    windspeed = Column(Float)
-    winddirection = Column(Float)
-    weathercode = Column(Integer)
+#     id = Column(Integer, primary_key=True)
+#     timestamp = Column(DateTime, nullable=False)
+#     temperature = Column(Float)
+#     windspeed = Column(Float)
+#     winddirection = Column(Float)
+#     weathercode = Column(Integer)
 
 
 # tracker, review this one

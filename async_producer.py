@@ -20,8 +20,8 @@ producer_config = {
 producer = Producer(producer_config)
 
 locations = [
-    {"city": "São Paulo", "latitude": 23.5, "longitude": 46.625},
-    {"city": "New York", "latitude": 40.7128, "longitude": -74.0060},
+    {"city": "sao_paulo", "latitude": 23.5, "longitude": 46.625},
+    {"city": "new_york", "latitude": 40.7128, "longitude": -74.0060},
 ]
 
 

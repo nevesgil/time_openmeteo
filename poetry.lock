@@ -728,6 +728,25 @@ files = [
 ]
 
 [[package]]
+name = "psycopg2"
+version = "2.9.10"
+description = "psycopg2 - Python-PostgreSQL Database Adapter"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "psycopg2-2.9.10-cp310-cp310-win32.whl", hash = "sha256:5df2b672140f95adb453af93a7d669d7a7bf0a56bcd26f1502329166f4a61716"},
+    {file = "psycopg2-2.9.10-cp310-cp310-win_amd64.whl", hash = "sha256:c6f7b8561225f9e711a9c47087388a97fdc948211c10a4bccbf0ba68ab7b3b5a"},
+    {file = "psycopg2-2.9.10-cp311-cp311-win32.whl", hash = "sha256:47c4f9875125344f4c2b870e41b6aad585901318068acd01de93f3677a6522c2"},
+    {file = "psycopg2-2.9.10-cp311-cp311-win_amd64.whl", hash = "sha256:0435034157049f6846e95103bd8f5a668788dd913a7c30162ca9503fdf542cb4"},
+    {file = "psycopg2-2.9.10-cp312-cp312-win32.whl", hash = "sha256:65a63d7ab0e067e2cdb3cf266de39663203d38d6a8ed97f5ca0cb315c73fe067"},
+    {file = "psycopg2-2.9.10-cp312-cp312-win_amd64.whl", hash = "sha256:4a579d6243da40a7b3182e0430493dbd55950c493d8c68f4eec0b302f6bbf20e"},
+    {file = "psycopg2-2.9.10-cp313-cp313-win_amd64.whl", hash = "sha256:91fd603a2155da8d0cfcdbf8ab24a2d54bca72795b90d2a3ed2b6da8d979dee2"},
+    {file = "psycopg2-2.9.10-cp39-cp39-win32.whl", hash = "sha256:9d5b3b94b79a844a986d029eee38998232451119ad653aea42bb9220a8c5066b"},
+    {file = "psycopg2-2.9.10-cp39-cp39-win_amd64.whl", hash = "sha256:88138c8dedcbfa96408023ea2b0c369eda40fe5d75002c0964c78f46f11fa442"},
+    {file = "psycopg2-2.9.10.tar.gz", hash = "sha256:12ec0b40b0273f95296233e8750441339298e6a572f7039da5b260e3c8b60e11"},
+]
+
+[[package]]
 name = "requests"
 version = "2.32.3"
 description = "Python HTTP for Humans."
@@ -872,6 +891,21 @@ files = [
 Click = "7.0"
 
 [[package]]
+name = "taos-ws-py"
+version = "0.3.8"
+description = ""
+optional = false
+python-versions = "*"
+files = [
+    {file = "taos_ws_py-0.3.8-cp37-abi3-macosx_10_12_x86_64.macosx_11_0_arm64.macosx_10_12_universal2.whl", hash = "sha256:4d5c63bb20809c9162e15b556d3cf56b1cb6b383b8be11b53723fb5ee6214cbb"},
+    {file = "taos_ws_py-0.3.8-cp37-abi3-macosx_10_12_x86_64.whl", hash = "sha256:d3cd367de735b24a5718feb908da8129b33cbc1cab9d7149163716992845da0c"},
+    {file = "taos_ws_py-0.3.8-cp37-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:89d95097de16d314d466bed6b61f2638a2b8f6a871de4a08f2efd1c94510d6ff"},
+    {file = "taos_ws_py-0.3.8-cp37-abi3-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:3573d1ac034841c4f9fd66d565f33c0940150a0462e56602a572fa1b587db0cd"},
+    {file = "taos_ws_py-0.3.8-cp37-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:ffaf1a26c50405acdb695a8391fbf438acea6d9835d49ac859f3bfaf8d65631c"},
+    {file = "taos_ws_py-0.3.8-cp37-abi3-win_amd64.whl", hash = "sha256:3e5e1de04bb3cffe2a69edf8e2913db5cf2bc4bec29128fb0ad6822d332e6ed7"},
+]
+
+[[package]]
 name = "typing-extensions"
 version = "4.12.2"
 description = "Backported and Experimental Type Hints for Python 3.8+"
@@ -998,4 +1032,4 @@ propcache = ">=0.2.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "fc66dd091c05a31874a05ebc6f273a6da6d151da9e0f297eca3466c28e437297"
+content-hash = "409f8b5632b78368a12854df2e71ac9f2317dbf56421297ee12b5db4da942511"
